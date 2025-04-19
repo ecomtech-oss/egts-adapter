@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.Definer.Format.XML
-
 description = "Library and Spring Boot starter for EGTS packets encoding-decoding"
 
 plugins {
@@ -24,6 +22,25 @@ subprojects {
         withSourcesJar()
     }
 
+    tasks {
+        withType<JavaCompile> {
+            targetCompatibility = "17"
+            sourceCompatibility = "17"
+        }
+
+        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+
+        withType<org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs> {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging {
@@ -35,7 +52,6 @@ subprojects {
     tasks.withType<JacocoReport> {
         reports {
             xml.required.set(true)
-            csv.required.set(true)
             html.required.set(true)
         }
     }
