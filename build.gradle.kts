@@ -1,9 +1,13 @@
-description = "Library and Sping Boot starter for EGTS packets encoding-decoding"
+import org.apache.tools.ant.taskdefs.Definer.Format.XML
+
+description = "Library and Spring Boot starter for EGTS packets encoding-decoding"
 
 plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin)
     `maven-publish`
+    // signing
+    jacoco
 }
 
 subprojects {
@@ -11,32 +15,13 @@ subprojects {
     apply(plugin = "kotlin-kapt")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
+//    apply(plugin = "signing")
 
-    tasks.register("sourcesJar", Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
-    }
+    group = "tech.ecom.egts"
 
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
-
-                artifactId = "egts-adapter-${project.name}"
-                artifact(tasks.named("sourcesJar").get())
-                from(components["java"])
-                pom {
-                    name.set("EGTS Adapter: ${project.name}")
-                    description.set(project.description ?: "EGTS encoding/decoding utilities")
-                    url.set("https://https://github.com/ecomtech-oss/egts-adapter")
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                        }
-                    }
-                }
-            }
-        }
+    java {
+        withJavadocJar()
+        withSourcesJar()
     }
 
     tasks.withType<Test> {
@@ -46,5 +31,130 @@ subprojects {
         }
         finalizedBy(tasks.named("jacocoTestReport"))
     }
+
+    tasks.withType<JacocoReport> {
+        reports {
+            xml.required.set(true)
+            csv.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    tasks.register("testCoverageReport") {
+        dependsOn("test", "jacocoTestReport")
+
+        doLast {
+            val jacocoReportFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+            if (!jacocoReportFile.exists()) {
+                println("JaCoCo report file not found. Run tests first.")
+                return@doLast
+            }
+
+            val doc = with(javax.xml.parsers.DocumentBuilderFactory.newInstance()) {
+                setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+                newDocumentBuilder().parse(jacocoReportFile)
+            }
+
+            val countersAttributes = doc.getElementsByTagName("counter").let { nodeList ->
+                (0 until nodeList.length).map { nodeList.item(it) }
+            }.map { it.attributes }
+
+            var branchTotal = 0; var branchMissed = 0
+            var lineTotal = 0; var lineMissed = 0
+            var complexityTotal = 0; var complexityMissed = 0
+
+            countersAttributes.onEach { attributes ->
+
+                val type = attributes.getNamedItem("type").nodeValue
+                val missed = attributes.getNamedItem("missed").nodeValue.toInt()
+                val covered = attributes.getNamedItem("covered").nodeValue.toInt()
+
+                when (type) {
+                    "BRANCH" -> {
+                        branchMissed = missed
+                        branchTotal = missed + covered
+                    }
+                    "LINE" -> {
+                        lineMissed = missed
+                        lineTotal = missed + covered
+                    }
+                    "COMPLEXITY" -> {
+                        complexityMissed = missed
+                        complexityTotal = missed + covered
+                    }
+                }
+            }
+
+            val branchPercentage = if (branchTotal > 0) (branchTotal - branchMissed) * 100 / branchTotal else 0
+            val linePercentage = if (lineTotal > 0) (lineTotal - lineMissed) * 100 / lineTotal else 0
+            val complexityPercentage = if (complexityTotal > 0) (complexityTotal - complexityMissed) * 100 / complexityTotal else 0
+
+            println("Branches coverage percentage: ${branchPercentage}%")
+            println("Lines coverage percentage: ${linePercentage}%")
+            println("Complexity: ${complexityMissed} missed of ${complexityTotal}. Coverage percentage: ${complexityPercentage}%")
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+        finalizedBy(tasks.named("jacocoTestReport"))
+        tasks.named("jacocoTestReport").get().finalizedBy(tasks.named("testCoverageReport"))
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+
+                from(components["java"])
+
+                pom {
+                    name.set("EGTS Adapter: ${project.name}")
+                    description.set(project.description ?: "EGTS encoding/decoding utilities")
+                    url.set("https://https://github.com/ecomtech-oss/egts-adapter")
+
+                    licenses {
+                        license {
+                            name.set("Apache-2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name.set("Ignat Nushtaev")
+                            email.set("inushtaev@ecom.tech")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git://github.com/ecomtech-oss/egts-adapter.git")
+                        developerConnection.set("scm:git:ssh://github.com/ecomtech-oss/egts-adapter.git")
+                        url.set("https://github.com/ecomtech-oss/egts-adapter")
+                    }
+                }
+            }
+        }
+//        repositories {
+//            maven {
+//                name = "MavenCentral"
+//
+//                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+//                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+//                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+//
+//                credentials {
+//                    username = project.findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
+//                    password = project.findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+//                }
+//            }
+//        }
+    }
+
+//    signing {
+//        sign(publishing.publications["mavenJava"])
+//    }
 
 }
