@@ -42,9 +42,16 @@ jobs:
                       **/build/reports/tests/
                       **/build/reports/jacoco/
 
+            - name: Test credentials
+              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+              run: |
+                curl -v -u "${{ secrets.OSSRH_USERNAME }}:${{ secrets.OSSRH_PASSWORD }}" -X GET https://s01.oss.sonatype.org/service/local/staging/profiles
+
             - name: Publish to Maven Central
               if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-              run: ./gradlew publish
+              run: |
+                echo "Using credentials for publishing..."
+                ./gradlew publish --info --stacktrace
               env:
                 OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                 OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

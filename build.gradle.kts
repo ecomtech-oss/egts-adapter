@@ -158,8 +158,8 @@ subprojects {
                 url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
 
                 credentials {
-                    username = project.findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
-                    password = project.findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+                    username = System.getenv("OSSRH_USERNAME") ?: project.findProperty("ossrhUsername") as String? ?: ""
+                    password = System.getenv("OSSRH_PASSWORD") ?: project.findProperty("ossrhPassword") as String? ?: ""
                 }
             }
         }
