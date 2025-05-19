@@ -8,8 +8,12 @@ project(":starter").name = "adapter-starter"
 
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         mavenLocal()
         mavenCentral()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
     }
 }
 

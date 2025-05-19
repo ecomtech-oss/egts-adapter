@@ -49,9 +49,8 @@ jobs:
 
             - name: Publish to Maven Central
               if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-              run: |
-                echo "Using credentials for publishing..."
-                ./gradlew publish --info --stacktrace
+              run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --info
+
               env:
                 OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                 OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

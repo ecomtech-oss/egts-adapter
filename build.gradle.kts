@@ -3,10 +3,23 @@ description = "Library and Spring Boot starter for EGTS packets encoding-decodin
 plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin)
+    alias(libs.plugins.nexus.publishing)
     `maven-publish`
     signing
     jacoco
 }
+
+//nexusPublishing {
+//    repositories {
+//        sonatype {
+//            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+//            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+//            username.set(System.getenv("OSSRH_USERNAME") ?: findProperty("ossrhUsername") as String? ?: "")
+//            password.set(System.getenv("OSSRH_PASSWORD") ?: findProperty("ossrhPassword") as String? ?: "")
+//            stagingProfileId.set("yourStagingProfileId") // Optional: Set this if you know your staging profile ID
+//        }
+//    }
+//}
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -149,20 +162,20 @@ subprojects {
                 }
             }
         }
-        repositories {
-            maven {
-                name = "MavenCentral"
-
-                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-
-                credentials {
-                    username = System.getenv("OSSRH_USERNAME") ?: project.findProperty("ossrhUsername") as String? ?: ""
-                    password = System.getenv("OSSRH_PASSWORD") ?: project.findProperty("ossrhPassword") as String? ?: ""
-                }
-            }
-        }
+//        repositories {
+//            maven {
+//                name = "MavenCentral"
+//
+//                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+//                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+//                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+//
+//                credentials {
+//                    username = System.getenv("OSSRH_USERNAME") ?: project.findProperty("ossrhUsername") as String? ?: ""
+//                    password = System.getenv("OSSRH_PASSWORD") ?: project.findProperty("ossrhPassword") as String? ?: ""
+//                }
+//            }
+//        }
     }
 
     signing {
