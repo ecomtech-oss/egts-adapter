@@ -20,7 +20,6 @@ import tech.ecom.egts.library.constants.PacketHeaderConstants.Companion.NO_ENCOD
 import tech.ecom.egts.library.constants.RecordConstants.Companion.DEFAULT_PROCESSING_PRIORITY
 import tech.ecom.egts.library.model.sfrd.AppServicesFrameData
 import tech.ecom.egts.library.model.sfrd.ResponseServicesFrameData
-import tech.ecom.egts.library.model.sfrd.record.subrecord.SubRecordType
 import tech.ecom.egts.library.model.sfrd.record.subrecord.types.DispatcherIdentity
 import tech.ecom.egts.library.model.sfrd.record.subrecord.types.SubRecordResponse
 import tech.ecom.egts.library.utils.hexStringToByteArray

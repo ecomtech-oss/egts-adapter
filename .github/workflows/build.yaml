@@ -42,11 +42,11 @@ jobs:
                       **/build/reports/tests/
                       **/build/reports/jacoco/
 
-        # - name: Publish to Maven Central
-        #   if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        #   run: ./gradlew publish
-        #   env:
-        #     OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        #     OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        #     ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
-        #     ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+            - name: Publish to Maven Central
+              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+              run: ./gradlew publish
+              env:
+                OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+                OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+                ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+                ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}

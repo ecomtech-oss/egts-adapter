@@ -39,3 +39,4 @@ build/
 
 ### Local env ###
 application-secrets.yml
+/gradle/gradle.properties

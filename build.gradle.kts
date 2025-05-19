@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin)
     `maven-publish`
-    // signing
+    signing
     jacoco
 }
 
@@ -13,7 +13,7 @@ subprojects {
     apply(plugin = "kotlin-kapt")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
-//    apply(plugin = "signing")
+    apply(plugin = "signing")
 
     group = "tech.ecom.egts"
 
@@ -41,26 +41,11 @@ subprojects {
         }
     }
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            events("passed", "skipped", "failed")
-        }
-        finalizedBy(tasks.named("jacocoTestReport"))
-    }
-
-    tasks.withType<JacocoReport> {
-        reports {
-            xml.required.set(true)
-            html.required.set(true)
-        }
-    }
-
     tasks.register("testCoverageReport") {
         dependsOn("test", "jacocoTestReport")
 
         doLast {
-            val jacocoReportFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+            val jacocoReportFile = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile
             if (!jacocoReportFile.exists()) {
                 println("JaCoCo report file not found. Run tests first.")
                 return@doLast
@@ -111,6 +96,13 @@ subprojects {
         }
     }
 
+    tasks.withType<JacocoReport> {
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging {
@@ -129,7 +121,7 @@ subprojects {
                 pom {
                     name.set("EGTS Adapter: ${project.name}")
                     description.set(project.description ?: "EGTS encoding/decoding utilities")
-                    url.set("https://https://github.com/ecomtech-oss/egts-adapter")
+                    url.set("https://github.com/ecomtech-oss/egts-adapter")
 
                     licenses {
                         license {
@@ -142,35 +134,44 @@ subprojects {
                         developer {
                             name.set("Ignat Nushtaev")
                             email.set("inushtaev@ecom.tech")
+                            properties.set(mapOf(
+                                "telegram" to "@ignat_nushtaev"
+                            ))
+
                         }
                     }
 
                     scm {
-                        connection.set("scm:git:git://github.com/ecomtech-oss/egts-adapter.git")
+                        connection.set("scm:git:https://github.com/ecomtech-oss/egts-adapter.git")
                         developerConnection.set("scm:git:ssh://github.com/ecomtech-oss/egts-adapter.git")
                         url.set("https://github.com/ecomtech-oss/egts-adapter")
                     }
                 }
             }
         }
-//        repositories {
-//            maven {
-//                name = "MavenCentral"
-//
-//                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-//                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-//                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-//
-//                credentials {
-//                    username = project.findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
-//                    password = project.findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
-//                }
-//            }
-//        }
+        repositories {
+            maven {
+                name = "MavenCentral"
+
+                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+
+                credentials {
+                    username = project.findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
+                    password = project.findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+                }
+            }
+        }
     }
 
-//    signing {
-//        sign(publishing.publications["mavenJava"])
-//    }
+    signing {
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        if (signingKey != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign(publishing.publications["mavenJava"])
+        }
+    }
 
 }
