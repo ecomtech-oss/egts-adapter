@@ -47,12 +47,10 @@ jobs:
               run: |
                 curl -v -u "${{ secrets.OSSRH_USERNAME }}:${{ secrets.OSSRH_PASSWORD }}" -X GET https://s01.oss.sonatype.org/service/local/staging/profiles
 
-            - name: Publish to Maven Central
-              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-              run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --info
-
-              env:
-                OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-                ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
-                ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+            -   name: Publish to Maven Central
+                run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon --no-parallel
+                env:
+                    OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+                    OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+                    ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+                    ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}

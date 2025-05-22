@@ -1,39 +1,22 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 description = "Library and Spring Boot starter for EGTS packets encoding-decoding"
 
 plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin)
-    alias(libs.plugins.nexus.publishing)
-    `maven-publish`
-    signing
     jacoco
+    alias(libs.plugins.publish)
 }
-
-//nexusPublishing {
-//    repositories {
-//        sonatype {
-//            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-//            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-//            username.set(System.getenv("OSSRH_USERNAME") ?: findProperty("ossrhUsername") as String? ?: "")
-//            password.set(System.getenv("OSSRH_PASSWORD") ?: findProperty("ossrhPassword") as String? ?: "")
-//            stagingProfileId.set("yourStagingProfileId") // Optional: Set this if you know your staging profile ID
-//        }
-//    }
-//}
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "kotlin-kapt")
     apply(plugin = "jacoco")
-    apply(plugin = "maven-publish")
-    apply(plugin = "signing")
+
+    apply(plugin = "com.vanniktech.maven.publish")
 
     group = "tech.ecom.egts"
-
-    java {
-        withJavadocJar()
-        withSourcesJar()
-    }
 
     tasks {
         withType<JavaCompile> {
@@ -125,66 +108,33 @@ subprojects {
         tasks.named("jacocoTestReport").get().finalizedBy(tasks.named("testCoverageReport"))
     }
 
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
+    mavenPublishing {
+        coordinates(group.toString(), project.name, project.version.toString())
+        pom {
+            name.set("EGTS Adapter: ${project.name}")
+            description.set(project.description ?: "EGTS encoding/decoding utilities")
+            url.set("https://github.com/ecomtech-oss/egts-adapter")
 
-                from(components["java"])
-
-                pom {
-                    name.set("EGTS Adapter: ${project.name}")
-                    description.set(project.description ?: "EGTS encoding/decoding utilities")
-                    url.set("https://github.com/ecomtech-oss/egts-adapter")
-
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            name.set("Ignat Nushtaev")
-                            email.set("inushtaev@ecom.tech")
-                            properties.set(mapOf(
-                                "telegram" to "@ignat_nushtaev"
-                            ))
-
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:https://github.com/ecomtech-oss/egts-adapter.git")
-                        developerConnection.set("scm:git:ssh://github.com/ecomtech-oss/egts-adapter.git")
-                        url.set("https://github.com/ecomtech-oss/egts-adapter")
-                    }
+            licenses {
+                license {
+                    name.set("MIT")
+                    url.set("https://opensource.org/licenses/MIT")
                 }
             }
+            developers {
+                developer {
+                    name.set("Ignat Nushtaev")
+                    email.set("inushtaev@ecom.tech")
+                    properties.set(mapOf("telegram" to "@ignat_nushtaev"))
+                }
+            }
+            scm {
+                connection.set("scm:git:https://github.com/ecomtech-oss/egts-adapter.git")
+                developerConnection.set("scm:git:ssh://github.com/ecomtech-oss/egts-adapter.git")
+                url.set("https://github.com/ecomtech-oss/egts-adapter")
+            }
         }
-//        repositories {
-//            maven {
-//                name = "MavenCentral"
-//
-//                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-//                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-//                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-//
-//                credentials {
-//                    username = System.getenv("OSSRH_USERNAME") ?: project.findProperty("ossrhUsername") as String? ?: ""
-//                    password = System.getenv("OSSRH_PASSWORD") ?: project.findProperty("ossrhPassword") as String? ?: ""
-//                }
-//            }
-//        }
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+        signAllPublications()
     }
-
-    signing {
-        val signingKey: String? by project
-        val signingPassword: String? by project
-        if (signingKey != null) {
-            useInMemoryPgpKeys(signingKey, signingPassword)
-            sign(publishing.publications["mavenJava"])
-        }
-    }
-
 }
