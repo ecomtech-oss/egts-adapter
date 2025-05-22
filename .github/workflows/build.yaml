@@ -50,7 +50,7 @@ jobs:
             -   name: Publish to Maven Central
                 run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon --no-parallel
                 env:
-                    OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                    OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-                    ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
-                    ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+                    ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+                    ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+                    ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
+                    ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
